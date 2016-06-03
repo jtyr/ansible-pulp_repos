@@ -1,0 +1,50 @@
+---
+
+- name: Check if "{{ repo.name }}" repo exists
+  uri:
+    url: https://localhost/pulp/api/v2/repositories/{{ repo.group }}-{{ repo.platform }}{{ repo.platform_version | default('') }}-{{ repo.name }}-{{ repo.tag }}/
+    method: GET
+    validate_certs: "{{ pulp_repos_validate_certs }}"
+    force_basic_auth: yes
+    user: "{{ pulp_repos_auth_user }}"
+    password: "{{ pulp_repos_auth_user }}"
+  register: pulp_repos_create_check
+  failed_when: false
+
+- name: Create "{{ repo.name }}" repo
+  uri:
+    url: https://localhost/pulp/api/v2/repositories/
+    method: POST
+    validate_certs: "{{ pulp_repos_validate_certs }}"
+    force_basic_auth: yes
+    user: "{{ pulp_repos_auth_user }}"
+    password: "{{ pulp_repos_auth_user }}"
+    body_format: json
+    body: "{{ pulp_repos_create_data | encode_json }}"
+    status_code: 201
+  register: pulp_repos_created
+  changed_when: >
+    pulp_repos_created is defined and
+    pulp_repos_created.status == 201
+  when: pulp_repos_create_check.status == 404
+
+- name: Sync "{{ repo.name }}" repo
+  uri:
+    url: https://localhost/pulp/api/v2/repositories/{{ repo.group }}-{{ repo.platform }}{{ repo.platform_version | default('') }}-{{ repo.name }}-{{ repo.tag }}/actions/sync/
+    method: POST
+    validate_certs: "{{ pulp_repos_validate_certs }}"
+    force_basic_auth: yes
+    user: "{{ pulp_repos_auth_user }}"
+    password: "{{ pulp_repos_auth_user }}"
+    body_format: json
+    body:
+      override_config: null
+    status_code: 202
+  register: pulp_repos_synced
+  changed_when: >
+    pulp_repos_synced is defined and
+    pulp_repos_synced.status == 202
+  when: >
+    repo['feed'] is defined and
+    pulp_repos_created is defined and
+    pulp_repos_created.changed

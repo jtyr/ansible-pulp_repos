@@ -1,0 +1,46 @@
+---
+
+- name: Create Apache rewrite rules for RHEL Server
+  template:
+    src: pulp_elServer_rewrite.conf.j2
+    dest: /etc/httpd/conf.d/pulp_elServer_rewrite.conf
+  notify:
+    - Reload Apache service
+  tags:
+    - pulp_repos_rewrite
+
+- include: create.yaml repo={{ item }}
+  when: >
+    (
+        item.state is not defined or
+        item.state == 'present'
+     ) and (
+        pulp_repos_limit is not defined or
+        (
+            item.group + '-' +
+            item.platform + item.platform_version | string + '-' +
+            item.name + '-' +
+            item.tag | string
+        ) in pulp_repos_limit
+    )
+  with_items: "{{ pulp_repos_create }}"
+  tags:
+    - pulp_repos_create
+
+- include: delete.yaml repo={{ item }}
+  when: >
+    (
+        item.state is defined and
+        item.state == 'absent'
+    ) and (
+        pulp_repos_limit is not defined or
+        (
+            item.group + '-' +
+            item.platform + item.platform_version | string + '-' +
+            item.name + '-' +
+            item.tag | string
+        ) in pulp_repos_limit
+    )
+  with_items: "{{ pulp_repos_create }}"
+  tags:
+    - pulp_repos_delete

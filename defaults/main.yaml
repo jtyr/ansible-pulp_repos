@@ -1,0 +1,63 @@
+---
+
+# Lists of repositories to be created
+pulp_repos_create: []
+
+# Pulp authentication details
+pulp_repos_auth_user: admin
+pulp_repos_auth_password: admin
+
+# Validate Pulp server SSL certs
+pulp_repos_validate_certs: no
+
+# Auto-publish after repo sync
+pulp_repos_distributor_auto_publish: yes
+
+# Publish over HTTP/HTTPS
+pulp_repos_distributor_publish_http: yes
+pulp_repos_distributor_publish_https: yes
+
+# Apache rewrite rule for RHEL Server
+pulp_repos_apache_rewrite_config:
+  content:
+    - sections:
+      - name: Location
+        param: /pulp/repos/
+        content:
+          - options:
+            - RewriteEngine: "on"
+            - RedirectMatch:
+              - ^(/pulp/repos/(base|external|misc|release)/[^/\.]+/\d+)Server(/.*)$
+              - $1$3
+
+# Data used to create the Pulp repo
+# (it must be as a variable because we need to translate it to JSON in order we
+# get the 'null' string translated to real null)
+pulp_repos_create_data:
+  id: "{{ repo.group }}-{{ repo.platform }}{{ repo.platform_version | default('') }}-{{ repo.name }}-{{ repo.tag }}"
+  description: "{{ repo.description | default('null') }}"
+  notes:
+    _repo-type: rpm-repo
+  importer_type_id: yum_importer
+  importer_config:
+    feed: "{{ repo.feed | default('null') }}"
+    proxy_host: "{{ repo.proxy_host | default('null') }}"
+    proxy_port: "{{ repo.proxy_port | default('null') }}"
+    ssl_ca_cert: "{{ repo.ca_cert | default('null') }}"
+    ssl_client_key: "{{ repo.client_key| default('null') }}"
+    ssl_client_cert: "{{ repo.client_cert | default('null') }}"
+  distributors:
+    - distributor_type_id: yum_distributor
+      distributor_id: yum_distributor
+      auto_publish: "{{ pulp_repos_distributor_auto_publish }}"
+      distributor_config:
+        http: "{{ pulp_repos_distributor_publish_http }}"
+        https: "{{ pulp_repos_distributor_publish_https }}"
+        relative_url: "{{ repo.group }}/{{ repo.platform }}/{{ repo.platform_version | default('all') }}/{{ repo.name }}/{{ repo.tag }}"
+    - distributor_type_id: export_distributor
+      distributor_id: export_distributor
+      auto_publish: "{{ pulp_repos_distributor_auto_publish }}"
+      distributor_config:
+        http: "{{ pulp_repos_distributor_publish_http }}"
+        https: "{{ pulp_repos_distributor_publish_https }}"
+        relative_url: "{{ repo.group }}/{{ repo.platform }}/{{ repo.platform_version | default('all') }}/{{ repo.name }}/{{ repo.tag }}"
