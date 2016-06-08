@@ -2,7 +2,7 @@
 
 - name: Check if "{{ repo.name }}" repo exists
   uri:
-    url: https://localhost/pulp/api/v2/repositories/{{ repo.group }}-{{ repo.platform }}{{ repo.platform_version | default('') }}-{{ repo.name }}-{{ repo.tag }}/
+    url: https://{{ pulp_repos_server }}/pulp/api/v2/repositories/{{ repo.group }}-{{ repo.platform }}{{ repo.platform_version | default('') }}-{{ repo.name }}-{{ repo.tag }}/
     method: GET
     validate_certs: "{{ pulp_repos_validate_certs }}"
     force_basic_auth: yes
@@ -13,7 +13,7 @@
 
 - name: Delete "{{ repo.name }}" repo
   uri:
-    url: https://localhost/pulp/api/v2/repositories/{{ repo.group }}-{{ repo.platform }}{{ repo.platform_version | default('') }}-{{ repo.name }}-{{ repo.tag }}/
+    url: https://{{ pulp_repos_server }}/pulp/api/v2/repositories/{{ repo.group }}-{{ repo.platform }}{{ repo.platform_version | default('') }}-{{ repo.name }}-{{ repo.tag }}/
     method: DELETE
     validate_certs: "{{ pulp_repos_validate_certs }}"
     force_basic_auth: yes
@@ -25,3 +25,11 @@
     pulp_repos_deleted is defined and
     pulp_repos_deleted.status == 202
   when: pulp_repos_delete_check.status == 200
+
+- name: Delete GPG key
+  file:
+    path: "{{ pulp_repos_gpgkey_dir }}/{{ repo.group }}-{{ repo.platform }}{{ repo.platform_version | default('') }}-{{ repo.name }}-{{ repo.tag }}.gpg"
+    state: absent
+  when: >
+    pulp_repos_delete_check.status == 200 and
+    repo.gpgkey is defined

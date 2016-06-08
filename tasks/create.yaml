@@ -2,7 +2,7 @@
 
 - name: Check if "{{ repo.name }}" repo exists
   uri:
-    url: https://localhost/pulp/api/v2/repositories/{{ repo.group }}-{{ repo.platform }}{{ repo.platform_version | default('') }}-{{ repo.name }}-{{ repo.tag }}/
+    url: https://{{ pulp_repos_server }}/pulp/api/v2/repositories/{{ repo.group }}-{{ repo.platform }}{{ repo.platform_version | default('') }}-{{ repo.name }}-{{ repo.tag }}/
     method: GET
     validate_certs: "{{ pulp_repos_validate_certs }}"
     force_basic_auth: yes
@@ -11,9 +11,37 @@
   register: pulp_repos_create_check
   failed_when: false
 
+# Can be removed after https://pulp.plan.io/issues/1984 is implemented
+- name: Make sure the key directory exists
+  file:
+    path: "{{ pulp_repos_gpgkey_dir }}"
+    state: directory
+    owner: "{{ pulp_repos_gpgkey_dir_user }}"
+    group: "{{ pulp_repos_gpgkey_dir_group }}"
+    mode: "{{ pulp_repos_gpgkey_dir_mode }}"
+  when: >
+    pulp_repos_create_check.status == 404 and
+    repo.gpgkey is defined and repo.gpgkey | match('^http(s|)://')
+
+- name: Fetch GPG key for {{ repo.name }} repo
+  uri:
+    url: "{{ repo.gpgkey }}"
+    validate_certs: "{{ repo.gpgkey_validate | default('no') }}"
+    # Comment out the next 4 lines after https://pulp.plan.io/issues/1984 is implemented
+    dest: "{{ pulp_repos_gpgkey_dir }}/{{ repo.group }}-{{ repo.platform }}{{ repo.platform_version | default('') }}-{{ repo.name }}-{{ repo.tag }}.gpg"
+    owner: "{{ pulp_repos_gpgkey_user }}"
+    group: "{{ pulp_repos_gpgkey_group }}"
+    mode: "{{ pulp_repos_gpgkey_mode }}"
+    # Uncomment the next two lines after https://pulp.plan.io/issues/1984 is implemented
+    #return_content: yes
+  #register: pulp_repos_create_gpgkey
+  when: >
+    pulp_repos_create_check.status == 404 and
+    repo.gpgkey is defined and repo.gpgkey | match('^http(s|)://')
+
 - name: Create "{{ repo.name }}" repo
   uri:
-    url: https://localhost/pulp/api/v2/repositories/
+    url: https://{{ pulp_repos_server }}/pulp/api/v2/repositories/
     method: POST
     validate_certs: "{{ pulp_repos_validate_certs }}"
     force_basic_auth: yes
@@ -30,7 +58,7 @@
 
 - name: Sync "{{ repo.name }}" repo
   uri:
-    url: https://localhost/pulp/api/v2/repositories/{{ repo.group }}-{{ repo.platform }}{{ repo.platform_version | default('') }}-{{ repo.name }}-{{ repo.tag }}/actions/sync/
+    url: https://{{ pulp_repos_server }}/pulp/api/v2/repositories/{{ repo.group }}-{{ repo.platform }}{{ repo.platform_version | default('') }}-{{ repo.name }}-{{ repo.tag }}/actions/sync/
     method: POST
     validate_certs: "{{ pulp_repos_validate_certs }}"
     force_basic_auth: yes

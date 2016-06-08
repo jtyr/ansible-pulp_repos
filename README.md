@@ -90,6 +90,7 @@ Examples
       # Create a repo with a feed
       - name: epel
         feed: https://dl.fedoraproject.org/pub/epel/6/x86_64/
+        gpgkey: https://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-6
         group: external
         platform: el
         platform_version: 6
