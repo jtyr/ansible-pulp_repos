@@ -12,16 +12,17 @@
 - include: create.yaml repo={{ item }}
   when: >
     (
-        item.state is not defined or
-        item.state == 'present'
-     ) and (
-        pulp_repos_limit is not defined or
-        (
-            item.group + '-' +
-            item.platform + item.platform_version | string + '-' +
-            item.name + '-' +
-            item.tag | string
-        ) in pulp_repos_limit
+      item.state is not defined or
+      item.state == 'present'
+    ) and (
+      pulp_repos_limit is not defined or
+      (
+        item.group ~ '-' ~
+        item.platform ~
+        item.platform_version | default('') ~ '-' ~
+        item.name ~ '-' ~
+        item.tag
+      ) in pulp_repos_limit
     )
   with_items: "{{ pulp_repos_create }}"
   tags:
@@ -30,16 +31,17 @@
 - include: delete.yaml repo={{ item }}
   when: >
     (
-        item.state is defined and
-        item.state == 'absent'
+      item.state is defined and
+      item.state == 'absent'
     ) and (
-        pulp_repos_limit is not defined or
-        (
-            item.group + '-' +
-            item.platform + item.platform_version | string + '-' +
-            item.name + '-' +
-            item.tag | string
-        ) in pulp_repos_limit
+      pulp_repos_limit is not defined or
+      (
+        item.group ~ '-' ~
+        item.platform ~
+        item.platform_version | default('') ~ '-' ~
+        item.name ~ '-' ~
+        item.tag
+      ) in pulp_repos_limit
     )
   with_items: "{{ pulp_repos_create }}"
   tags:
