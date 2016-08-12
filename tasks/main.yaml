@@ -24,7 +24,7 @@
         item.tag
       ) in pulp_repos_limit
     )
-  with_items: "{{ pulp_repos_create }}"
+  with_items: "{{ pulp_repos_list }}"
   tags:
     - pulp_repos_create
 
@@ -43,6 +43,6 @@
         item.tag
       ) in pulp_repos_limit
     )
-  with_items: "{{ pulp_repos_create }}"
+  with_items: "{{ pulp_repos_list }}"
   tags:
     - pulp_repos_delete

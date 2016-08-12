@@ -86,7 +86,7 @@ Examples
       client_key: "{{ lookup('file', 'client.crt') }}"
       client_cert: "{{ lookup('file', 'client.pem') }}"
     # Create or delete repos
-    pulp_repos_create:
+    pulp_repos_list:
       # Create a repo with a feed
       - name: epel
         feed: https://dl.fedoraproject.org/pub/epel/6/x86_64/
@@ -140,7 +140,7 @@ List of variables used by the role:
 
 ```
 # Lists of repositories to be created
-pulp_repos_create: []
+pulp_repos_list: []
 
 # Pulp authentication details
 pulp_repos_auth_user: admin

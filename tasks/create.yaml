@@ -1,6 +1,6 @@
 ---
 
-- name: Check if "{{ repo.name }}" repo exists
+- name: Check if {{ repo.group }}-{{ repo.platform }}{{ repo.platform_version | default('') }}-{{ repo.name }}-{{ repo.tag }} repo exists
   uri:
     url: https://{{ pulp_repos_server }}/pulp/api/v2/repositories/{{ repo.group }}-{{ repo.platform }}{{ repo.platform_version | default('') }}-{{ repo.name }}-{{ repo.tag }}/
     method: GET
@@ -23,7 +23,7 @@
     pulp_repos_create_check.status == 404 and
     repo.gpgkey is defined and repo.gpgkey | match('^http(s|)://')
 
-- name: Fetch GPG key for {{ repo.name }} repo
+- name: Fetch GPG key for {{ repo.group }}-{{ repo.platform }}{{ repo.platform_version | default('') }}-{{ repo.name }}-{{ repo.tag }} repo
   uri:
     url: "{{ repo.gpgkey }}"
     validate_certs: "{{ repo.gpgkey_validate | default('no') }}"
@@ -39,7 +39,7 @@
     pulp_repos_create_check.status == 404 and
     repo.gpgkey is defined and repo.gpgkey | match('^http(s|)://')
 
-- name: Create "{{ repo.name }}" repo
+- name: Create {{ repo.group }}-{{ repo.platform }}{{ repo.platform_version | default('') }}-{{ repo.name }}-{{ repo.tag }} repo
   uri:
     url: https://{{ pulp_repos_server }}/pulp/api/v2/repositories/
     method: POST
@@ -56,7 +56,7 @@
     pulp_repos_created.status == 201
   when: pulp_repos_create_check.status == 404
 
-- name: Sync "{{ repo.name }}" repo
+- name: Sync {{ repo.group }}-{{ repo.platform }}{{ repo.platform_version | default('') }}-{{ repo.name }}-{{ repo.tag }} repo
   uri:
     url: https://{{ pulp_repos_server }}/pulp/api/v2/repositories/{{ repo.group }}-{{ repo.platform }}{{ repo.platform_version | default('') }}-{{ repo.name }}-{{ repo.tag }}/actions/sync/
     method: POST

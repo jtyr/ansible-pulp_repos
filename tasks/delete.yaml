@@ -1,6 +1,6 @@
 ---
 
-- name: Check if "{{ repo.name }}" repo exists
+- name: Check if {{ repo.group }}-{{ repo.platform }}{{ repo.platform_version | default('') }}-{{ repo.name }}-{{ repo.tag }} repo exists
   uri:
     url: https://{{ pulp_repos_server }}/pulp/api/v2/repositories/{{ repo.group }}-{{ repo.platform }}{{ repo.platform_version | default('') }}-{{ repo.name }}-{{ repo.tag }}/
     method: GET
@@ -11,7 +11,7 @@
   register: pulp_repos_delete_check
   failed_when: false
 
-- name: Delete "{{ repo.name }}" repo
+- name: Delete {{ repo.group }}-{{ repo.platform }}{{ repo.platform_version | default('') }}-{{ repo.name }}-{{ repo.tag }} repo
   uri:
     url: https://{{ pulp_repos_server }}/pulp/api/v2/repositories/{{ repo.group }}-{{ repo.platform }}{{ repo.platform_version | default('') }}-{{ repo.name }}-{{ repo.tag }}/
     method: DELETE
@@ -26,7 +26,7 @@
     pulp_repos_deleted.status == 202
   when: pulp_repos_delete_check.status == 200
 
-- name: Delete GPG key
+- name: Delete GPG key for {{ repo.group }}-{{ repo.platform }}{{ repo.platform_version | default('') }}-{{ repo.name }}-{{ repo.tag }}
   file:
     path: "{{ pulp_repos_gpgkey_dir }}/{{ repo.group }}-{{ repo.platform }}{{ repo.platform_version | default('') }}-{{ repo.name }}-{{ repo.tag }}.key"
     state: absent

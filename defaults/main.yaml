@@ -1,7 +1,7 @@
 ---
 
 # Lists of repositories to be created
-pulp_repos_create: []
+pulp_repos_list: []
 
 # Pulp server name
 pulp_repos_server: localhost
