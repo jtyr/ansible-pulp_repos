@@ -32,6 +32,7 @@
     owner: "{{ pulp_repos_gpgkey_user }}"
     group: "{{ pulp_repos_gpgkey_group }}"
     mode: "{{ pulp_repos_gpgkey_mode }}"
+    status_code: 200,304
     # Uncomment the next two lines after https://pulp.plan.io/issues/1984 is implemented
     #return_content: yes
   #register: pulp_repos_create_gpgkey
