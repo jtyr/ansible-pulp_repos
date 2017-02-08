@@ -95,6 +95,15 @@ Examples
         platform: el
         platform_version: 6
         tag: "201605_1"
+      # Create a repo with a feed and a schedule
+      - name: epel
+        feed: https://dl.fedoraproject.org/pub/epel/6/x86_64/
+        gpgkey: https://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-6
+        group: external
+        platform: el
+        platform_version: 6
+        tag: latest
+        schedule: 2016-01-01T02:00:00Z/P1D
       # Create a repo with a feed and additional certificates
       - <<: *pulp_repos__certs
         name: scalablefilesystem

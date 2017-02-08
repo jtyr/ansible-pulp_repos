@@ -77,3 +77,25 @@
     repo['feed'] is defined and
     pulp_repos_created is defined and
     pulp_repos_created.changed
+
+- name: Schedule sync for {{ repo.group }}-{{ repo.platform }}{{ repo.platform_version | default('') }}-{{ repo.name }}-{{ repo.tag }} repo
+  uri:
+    url: https://{{ pulp_repos_server }}/pulp/api/v2/repositories/{{ repo.group }}-{{ repo.platform }}{{ repo.platform_version | default('') }}-{{ repo.name }}-{{ repo.tag }}/importers/yum_importer/schedules/sync/
+    method: POST
+    validate_certs: "{{ pulp_repos_validate_certs }}"
+    force_basic_auth: yes
+    user: "{{ pulp_repos_auth_user }}"
+    password: "{{ pulp_repos_auth_user }}"
+    body_format: json
+    body:
+      schedule: "{{ repo.schedule }}"
+    status_code: 201
+  register: pulp_repos_synced
+  changed_when: >
+    pulp_repos_synced is defined and
+    pulp_repos_synced.status == 201
+  when: >
+    repo['feed'] is defined and
+    pulp_repos_created is defined and
+    pulp_repos_created.changed and
+    'schedule' in repo
