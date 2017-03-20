@@ -3,6 +3,9 @@
 # Lists of repositories to be created
 pulp_repos_list: []
 
+# Common options to be added to all pulp_repos_list items
+pulp_repos_common: {}
+
 # Pulp server name
 pulp_repos_server: localhost
 

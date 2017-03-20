@@ -151,6 +151,12 @@ List of variables used by the role:
 # Lists of repositories to be created
 pulp_repos_list: []
 
+# Common options to be added to all pulp_repos_list items
+pulp_repos_common: {}
+
+# Pulp server name
+pulp_repos_server: localhost
+
 # Pulp authentication details
 pulp_repos_auth_user: admin
 pulp_repos_auth_password: admin
@@ -165,6 +171,16 @@ pulp_repos_distributor_auto_publish: yes
 pulp_repos_distributor_publish_http: yes
 pulp_repos_distributor_publish_https: yes
 
+# GPG key attributes
+# Can be removed after https://pulp.plan.io/issues/1984 is implemented
+pulp_repos_gpgkey_dir: /var/www/html/keys
+pulp_repos_gpgkey_dir_user: apache
+pulp_repos_gpgkey_dir_group: apache
+pulp_repos_gpgkey_dir_mode: 0750
+pulp_repos_gpgkey_user: "{{ pulp_repos_gpgkey_dir_user }}"
+pulp_repos_gpgkey_group: "{{ pulp_repos_gpgkey_dir_group }}"
+pulp_repos_gpgkey_mode: 0640
+
 # Apache rewrite rule for RHEL Server
 pulp_repos_apache_rewrite_config:
   content:
@@ -175,8 +191,8 @@ pulp_repos_apache_rewrite_config:
           - options:
             - RewriteEngine: "on"
             - RedirectMatch:
-              - ^(/pulp/repos/(base|external|misc|release)/[^/\.]+/\d+)Server(/.*)$
-              - $1$3
+              - ^(/pulp/repos/(base|external|misc|release)/[^/]+/\d+)([^/]+)(/.*)$
+              - $1$4
 
 # Data used to create the Pulp repo
 # (it must be as a variable because we need to translate it to JSON in order we
@@ -202,13 +218,13 @@ pulp_repos_create_data:
         http: "{{ pulp_repos_distributor_publish_http }}"
         https: "{{ pulp_repos_distributor_publish_https }}"
         relative_url: "{{ repo.group }}/{{ repo.platform }}/{{ repo.platform_version | default('all') }}/{{ repo.name }}/{{ repo.tag }}"
-    - distributor_type_id: export_distributor
-      distributor_id: export_distributor
-      auto_publish: "{{ pulp_repos_distributor_auto_publish }}"
-      distributor_config:
-        http: "{{ pulp_repos_distributor_publish_http }}"
-        https: "{{ pulp_repos_distributor_publish_https }}"
-        relative_url: "{{ repo.group }}/{{ repo.platform }}/{{ repo.platform_version | default('all') }}/{{ repo.name }}/{{ repo.tag }}"
+        # Uncomment after https://pulp.plan.io/issues/1984 is implemented
+        #gpgkey: "{{
+        #  pulp_repos_create_gpgkey.content
+        #    if repo.gpgkey is defined and repo.gpgkey | match('^http(s|)://') and pulp_repos_create_gpgkey.content is defined else
+        #      lookup('file', repo.gpgkey)
+        #        if repo.gpgkey is defined else
+        #          default('null') }}"
 ```
 
 

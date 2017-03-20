@@ -9,7 +9,7 @@
   tags:
     - pulp_repos_rewrite
 
-- include: create.yaml repo={{ item }}
+- include: create.yaml repo={{ item.update(pulp_repos_common) }}{{ item }}
   when: >
     (
       item.state is not defined or
